@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPS Pro - Advanced VPS Panel</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">⚡</span>
+          <span class="logo-text">VPS<span class="highlight">Pro</span></span>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="terminal">
+          <span class="nav-icon">💻</span>
+          <span class="nav-text">Terminal</span>
+        </button>
+        <button class="nav-item" data-view="sessions">
+          <span class="nav-icon">📁</span>
+          <span class="nav-text">Sessions</span>
+        </button>
+        <button class="nav-item" data-view="files">
+          <span class="nav-icon">📂</span>
+          <span class="nav-text">File Manager</span>
+        </button>
+        <button class="nav-item" data-view="cron">
+          <span class="nav-icon">⏰</span>
+          <span class="nav-text">Cron Jobs</span>
+        </button>
+        <button class="nav-item" data-view="vnc">
+          <span class="nav-icon">🖥️</span>
+          <span class="nav-text">VNC</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="stats-mini">
+          <div class="stat-item">
+            <span class="stat-label">Sessions</span>
+            <span class="stat-value" id="statSessions">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">CPU</span>
+            <span class="stat-value" id="statCPU">0%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">RAM</span>
+            <span class="stat-value" id="statRAM">0%</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <section class="view active" id="dashboard-view">
+        <div class="view-header">
+          <h1>Dashboard</h1>
+          <p class="subtitle">System overview and quick actions</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon cpu">🖥️</div>
+            <div class="stat-info">
+              <span class="stat-value" id="cpuUsage">0%</span>
+              <span class="stat-label">CPU Usage</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-bar-fill" id="cpuBar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon ram">💾</div>
+            <div class="stat-info">
+              <span class="stat-value" id="memUsage">0%</span>
+              <span class="stat-label">Memory Usage</span>
+            </div>
+            <div class="stat-bar">
+              <div class="stat-bar-fill" id="memBar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon sessions">📁</div>
+            <div class="stat-info">
+              <span class="stat-value" id="activeSessions">0</span>
+              <span class="stat-label">Active Sessions</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon uptime">⏱️</div>
+            <div class="stat-info">
+              <span class="stat-value" id="uptime">0h</span>
+              <span class="stat-label">Uptime</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h2>Quick Actions</h2>
+          <div class="action-buttons">
+            <button class="action-btn primary" id="quickNewSession">
+              <span class="action-icon">➕</span>
+              <span class="action-text">New Session</span>
+            </button>
+            <button class="action-btn" id="quickOpenTerminal">
+              <span class="action-icon">💻</span>
+              <span class="action-text">Open Terminal</span>
+            </button>
+            <button class="action-btn" id="quickFileManager">
+              <span class="action-icon">📂</span>
+              <span class="action-text">File Manager</span>
+            </button>
+            <button class="action-btn" id="quickCronJobs">
+              <span class="action-icon">⏰</span>
+              <span class="action-text">Cron Jobs</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="system-info">
+          <h2>System Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Hostname</span>
+              <span class="info-value" id="hostname">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Platform</span>
+              <span class="info-value" id="platform">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Architecture</span>
+              <span class="info-value" id="arch">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Total Memory</span>
+              <span class="info-value" id="totalMem">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Used Memory</span>
+              <span class="info-value" id="usedMem">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Free Memory</span>
+              <span class="info-value" id="freeMem">-</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Terminal View -->
+      <section class="view" id="terminal-view">
+        <div class="view-header">
+          <h1>Terminal</h1>
+          <div class="terminal-controls">
+            <select id="sessionSelect" class="session-select">
+              <option value="">-- Select Session --</option>
+            </select>
+            <button class="ctrl-btn" id="newSessionBtn" title="New Session">
+              <span>➕</span>
+            </button>
+            <button class="ctrl-btn" id="deleteSessionBtn" title="Delete Session">
+              <span>🗑️</span>
+            </button>
+            <button class="ctrl-btn" id="fullscreenBtn" title="Fullscreen">
+              <span>⛶</span>
+            </button>
+            <button class="ctrl-btn" id="clearTerminalBtn" title="Clear">
+              <span>🧹</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="terminal-wrapper" id="terminalWrapper">
+          <div id="terminal" class="terminal"></div>
+          <div class="terminal-status" id="terminalStatus">
+            <span class="status-dot"></span>
+            <span class="status-text">Disconnected</span>
+          </div>
+        </div>
+
+        <div class="terminal-footer">
+          <div class="terminal-info">
+            <span id="sessionInfo">No session connected</span>
+          </div>
+          <div class="terminal-actions">
+            <button class="small-btn" id="toggleTerminal">Toggle Terminal</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sessions View -->
+      <section class="view" id="sessions-view">
+        <div class="view-header">
+          <h1>Sessions</h1>
+          <button class="btn primary" id="createSessionBtn">
+            <span>➕</span> New Session
+          </button>
+        </div>
+
+        <div class="sessions-list" id="sessionsList">
+          <div class="empty-state">
+            <span class="empty-icon">📁</span>
+            <p>No sessions yet. Create your first session!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- File Manager View -->
+      <section class="view" id="files-view">
+        <div class="view-header">
+          <h1>File Manager</h1>
+          <div class="file-controls">
+            <div class="breadcrumb" id="fileBreadcrumb">
+              <button class="breadcrumb-item" data-path="/">/</button>
+            </div>
+            <button class="btn" id="newFolderBtn">
+              <span>📁</span> New Folder
+            </button>
+            <button class="btn" id="uploadFileBtn">
+              <span>📤</span> Upload
+            </button>
+            <button class="btn" id="refreshFilesBtn">
+              <span>🔄</span> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="file-manager-container">
+          <div class="file-list" id="fileList">
+            <div class="empty-state">
+              <span class="empty-icon">📂</span>
+              <p>Loading files...</p>
+            </div>
+          </div>
+
+          <div class="file-preview" id="filePreview">
+            <div class="preview-header">
+              <h3>File Preview</h3>
+              <button class="close-preview" id="closePreview">×</button>
+            </div>
+            <div class="preview-content" id="previewContent">
+              <p class="placeholder">Select a file to preview</p>
+            </div>
+            <div class="preview-actions" id="previewActions" style="display: none;">
+              <button class="btn" id="editFileBtn">Edit</button>
+              <button class="btn danger" id="deleteFileBtn">Delete</button>
+              <button class="btn" id="downloadFileBtn">Download</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cron Jobs View -->
+      <section class="view" id="cron-view">
+        <div class="view-header">
+          <h1>Cron Jobs</h1>
+          <button class="btn primary" id="addCronBtn">
+            <span>➕</span> Add Cron Job
+          </button>
+        </div>
+
+        <div class="cron-list" id="cronList">
+          <div class="empty-state">
+            <span class="empty-icon">⏰</span>
+            <p>No cron jobs scheduled. Add one to get started!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VNC View -->
+      <section class="view" id="vnc-view">
+        <div class="view-header">
+          <h1>VNC Desktop</h1>
+          <div class="vnc-controls">
+            <button class="btn primary" id="startVncBtn">
+              <span>▶️</span> Start VNC
+            </button>
+            <button class="btn" id="refreshVncBtn">
+              <span>🔄</span> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="vnc-container" id="vncContainer">
+          <div class="vnc-placeholder">
+            <div class="vnc-icon">🖥️</div>
+            <h3>VNC Desktop Access</h3>
+            <p>Click "Start VNC" to launch a remote desktop session</p>
+            <p class="note">Note: VNC requires additional configuration on the server</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="modalOverlay">
+    <!-- New Session Modal -->
+    <div class="modal" id="newSessionModal">
+      <div class="modal-header">
+        <h3>New Session</h3>
+        <button class="modal-close" data-modal="newSessionModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="sessionName">Session Name</label>
+          <input type="text" id="sessionName" placeholder="My Terminal">
+        </div>
+        <div class="form-group">
+          <label for="sessionDir">Working Directory</label>
+          <input type="text" id="sessionDir" placeholder="/root">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-modal="newSessionModal">Cancel</button>
+        <button class="btn primary" id="confirmNewSession">Create</button>
+      </div>
+    </div>
+
+    <!-- New Folder Modal -->
+    <div class="modal" id="newFolderModal">
+      <div class="modal-header">
+        <h3>New Folder</h3>
+        <button class="modal-close" data-modal="newFolderModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="folderName">Folder Name</label>
+          <input type="text" id="folderName" placeholder="new_folder">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-modal="newFolderModal">Cancel</button>
+        <button class="btn primary" id="confirmNewFolder">Create</button>
+      </div>
+    </div>
+
+    <!-- Cron Job Modal -->
+    <div class="modal" id="cronModal">
+      <div class="modal-header">
+        <h3>Add Cron Job</h3>
+        <button class="modal-close" data-modal="cronModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="cronName">Job Name</label>
+          <input type="text" id="cronName" placeholder="My Cron Job">
+        </div>
+        <div class="form-group">
+          <label for="cronSchedule">Schedule (cron expression)</label>
+          <input type="text" id="cronSchedule" placeholder="* * * * *">
+          <span class="help-text">Format: minute hour day month weekday</span>
+        </div>
+        <div class="form-group">
+          <label for="cronCommand">Command</label>
+          <textarea id="cronCommand" placeholder="echo 'Hello World' >> /tmp/output.log" rows="3"></textarea>
+        </div>
+        <div class="cron-presets">
+          <span class="preset-label">Presets:</span>
+          <button class="preset-btn" data-preset="* * * * *">Every minute</button>
+          <button class="preset-btn" data-preset="*/5 * * * *">Every 5 min</button>
+          <button class="preset-btn" data-preset="0 * * * *">Hourly</button>
+          <button class="preset-btn" data-preset="0 0 * * *">Daily</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-modal="cronModal">Cancel</button>
+        <button class="btn primary" id="confirmCron">Add</button>
+      </div>
+    </div>
+
+    <!-- Edit File Modal -->
+    <div class="modal large" id="editFileModal">
+      <div class="modal-header">
+        <h3>Edit File</h3>
+        <button class="modal-close" data-modal="editFileModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="filePath">File Path</label>
+          <input type="text" id="editFilePath" readonly>
+        </div>
+        <div class="form-group">
+          <label for="fileContent">Content</label>
+          <textarea id="fileContent" rows="15"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-modal="editFileModal">Cancel</button>
+        <button class="btn primary" id="saveFileBtn">Save</button>
+      </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="uploadModal">
+      <div class="modal-header">
+        <h3>Upload File</h3>
+        <button class="modal-close" data-modal="uploadModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Select File</label>
+          <input type="file" id="fileInput">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-modal="uploadModal">Cancel</button>
+        <button class="btn primary" id="confirmUpload">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Hidden file input for upload -->
+  <input type="file" id="hiddenFileInput" style="display: none;">
+
+  <!-- xterm.js -->
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

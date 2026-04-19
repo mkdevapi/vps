@@ -1,0 +1,29 @@
+{
+  "name": "vps-pro",
+  "version": "1.0.0",
+  "description": "Advanced Web-based VPS Panel with persistent terminal sessions, VNC support, file manager, cron jobs, and modern dashboard UI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "vps",
+    "terminal",
+    "websocket",
+    "panel",
+    "vnc"
+  ],
+  "author": "MiniMax Agent",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "node-pty": "^1.0.0",
+    "node-cron": "^3.0.3",
+    "fs-extra": "^11.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

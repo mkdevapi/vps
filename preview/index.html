@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPS Pro - Advanced VPS Panel Preview</title>
+  <style>
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-hover: #30363d;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-blue: #58a6ff;
+  --accent-green: #3fb950;
+  --accent-yellow: #d29922;
+  --accent-red: #f85149;
+  --accent-purple: #a371f7;
+  --accent-cyan: #39c5cf;
+  --border-color: #30363d;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition: all 0.2s ease;
+  --sidebar-width: 260px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.5; }
+
+.app-container { display: flex; height: 100vh; overflow: hidden; }
+
+.sidebar { width: var(--sidebar-width); background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+.sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { font-size: 28px; }
+.logo-text { font-size: 22px; font-weight: 700; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.logo-text .highlight { color: var(--accent-cyan); -webkit-text-fill-color: var(--accent-cyan); }
+
+.sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: none; border: none; border-radius: var(--radius-md); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; transition: var(--transition); text-align: left; width: 100%; }
+.nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-item.active { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+.nav-icon { font-size: 18px; width: 24px; text-align: center; }
+
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border-color); }
+.stats-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat-item { text-align: center; padding: 8px; background: var(--bg-tertiary); border-radius: var(--radius-sm); }
+.stat-item .stat-label { display: block; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-item .stat-value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+.main-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.view { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding: 24px; animation: fadeIn 0.3s ease; }
+.view.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.view-header h1 { font-size: 28px; font-weight: 700; }
+.view-header .subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; transition: var(--transition); }
+.btn:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+.btn.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+.btn.primary:hover { background: #4c9aed; }
+.btn.small { padding: 6px 12px; font-size: 12px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; align-items: flex-start; gap: 16px; }
+.stat-icon { font-size: 32px; padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-md); }
+.stat-info { flex: 1; }
+.stat-info .stat-value { display: block; font-size: 28px; font-weight: 700; color: var(--text-primary); }
+.stat-info .stat-label { font-size: 13px; color: var(--text-secondary); }
+.stat-bar { width: 100%; height: 6px; background: var(--bg-tertiary); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+.stat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); border-radius: 3px; transition: width 0.5s ease; }
+
+.quick-actions { margin-bottom: 32px; }
+.quick-actions h2 { font-size: 18px; margin-bottom: 16px; color: var(--text-secondary); }
+.action-buttons { display: flex; flex-wrap: wrap; gap: 12px; }
+.action-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 24px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); color: var(--text-primary); cursor: pointer; transition: var(--transition); }
+.action-btn:hover { background: var(--bg-hover); border-color: var(--accent-blue); transform: translateY(-2px); }
+.action-btn.primary { background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(163, 113, 247, 0.2)); border-color: var(--accent-blue); }
+.action-icon { font-size: 28px; }
+.action-text { font-size: 13px; font-weight: 500; }
+
+.system-info { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; }
+.system-info h2 { font-size: 16px; margin-bottom: 16px; color: var(--text-secondary); }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.info-item { padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); }
+.info-label { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.info-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+.notice-banner { background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(163, 113, 247, 0.2)); border: 1px solid var(--accent-blue); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+.notice-banner .notice-icon { font-size: 24px; }
+.notice-banner .notice-content h4 { font-size: 14px; margin-bottom: 4px; }
+.notice-banner .notice-content p { font-size: 13px; color: var(--text-secondary); }
+
+.terminal-controls { display: flex; align-items: center; gap: 8px; }
+.session-select { padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; min-width: 200px; }
+.terminal-wrapper { flex: 1; background: #0d1117; border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; position: relative; min-height: 400px; display: flex; flex-direction: column; }
+.terminal-preview { flex: 1; padding: 16px; font-family: 'Fira Code', 'Cascadia Code', Menlo, monospace; font-size: 14px; line-height: 1.4; overflow: auto; color: #c9d1d9; }
+.terminal-line { white-space: pre-wrap; word-break: break-all; }
+.terminal-line.prompt { color: var(--accent-green); }
+.terminal-line.output { color: var(--text-primary); }
+.terminal-line.command { color: var(--accent-cyan); }
+.terminal-status { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(13, 17, 23, 0.9); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-secondary); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.ctrl-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; transition: var(--transition); font-size: 16px; }
+.ctrl-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.sessions-list { display: flex; flex-direction: column; gap: 12px; }
+.session-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); transition: var(--transition); }
+.session-card:hover { border-color: var(--accent-blue); }
+.session-card.active { border-color: var(--accent-green); background: rgba(63, 185, 80, 0.05); }
+.session-icon { font-size: 36px; padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-md); }
+.session-info { flex: 1; }
+.session-info h3 { font-size: 16px; margin-bottom: 4px; }
+.session-path { font-size: 13px; color: var(--accent-cyan); font-family: monospace; margin-bottom: 4px; }
+.session-meta { font-size: 12px; color: var(--text-muted); }
+.session-actions { display: flex; gap: 8px; }
+
+.file-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.breadcrumb { display: flex; align-items: center; gap: 4px; padding: 8px 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 13px; }
+.file-manager-container { display: grid; grid-template-columns: 1fr 350px; gap: 20px; flex: 1; min-height: 0; }
+.file-list { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; }
+.file-list-header { display: grid; grid-template-columns: 30px 1fr 100px 100px 60px; gap: 12px; padding: 12px 16px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-color); font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+.file-item { display: grid; grid-template-columns: 30px 1fr 100px 100px 60px; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: var(--transition); }
+.file-item:hover { background: var(--bg-hover); }
+.file-item:last-child { border-bottom: none; }
+.file-icon { font-size: 20px; text-align: center; }
+.file-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size, .file-date, .file-perms { font-size: 12px; color: var(--text-secondary); }
+.file-preview { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: flex; flex-direction: column; }
+.preview-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-color); }
+.preview-header h3 { font-size: 14px; color: var(--text-secondary); }
+.preview-content { flex: 1; padding: 16px; overflow: auto; font-size: 13px; }
+.code-preview { background: var(--bg-tertiary); padding: 12px; border-radius: var(--radius-sm); font-family: 'Fira Code', monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+
+.cron-list { display: flex; flex-direction: column; gap: 12px; }
+.cron-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); }
+.cron-info { flex: 1; }
+.cron-info h3 { font-size: 16px; margin-bottom: 4px; }
+.cron-schedule { font-size: 14px; font-family: monospace; color: var(--accent-cyan); margin-bottom: 4px; }
+.cron-command { font-size: 13px; color: var(--text-secondary); font-family: monospace; }
+.cron-actions { display: flex; gap: 8px; }
+
+.vnc-container { flex: 1; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); min-height: 500px; }
+.vnc-placeholder { text-align: center; padding: 40px; }
+.vnc-icon { font-size: 80px; margin-bottom: 20px; }
+.vnc-placeholder h3 { font-size: 24px; margin-bottom: 12px; }
+.vnc-placeholder p { color: var(--text-secondary); margin-bottom: 8px; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-icon { font-size: 64px; display: block; margin-bottom: 16px; opacity: 0.5; }
+.empty-state p { font-size: 14px; }
+
+@media (max-width: 1024px) { .file-manager-container { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .view { padding: 16px; }
+  .view-header { flex-direction: column; align-items: flex-start; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .file-item { grid-template-columns: 30px 1fr; }
+  .file-size, .file-date, .file-perms { display: none; }
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">⚡</span>
+          <span class="logo-text">VPS<span class="highlight">Pro</span></span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showView('dashboard')"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></button>
+        <button class="nav-item" onclick="showView('terminal')"><span class="nav-icon">💻</span><span class="nav-text">Terminal</span></button>
+        <button class="nav-item" onclick="showView('sessions')"><span class="nav-icon">📁</span><span class="nav-text">Sessions</span></button>
+        <button class="nav-item" onclick="showView('files')"><span class="nav-icon">📂</span><span class="nav-text">File Manager</span></button>
+        <button class="nav-item" onclick="showView('cron')"><span class="nav-icon">⏰</span><span class="nav-text">Cron Jobs</span></button>
+        <button class="nav-item" onclick="showView('vnc')"><span class="nav-icon">🖥️</span><span class="nav-text">VNC</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="stats-mini">
+          <div class="stat-item"><span class="stat-label">Sessions</span><span class="stat-value">3</span></div>
+          <div class="stat-item"><span class="stat-label">CPU</span><span class="stat-value">23%</span></div>
+          <div class="stat-item"><span class="stat-label">RAM</span><span class="stat-value">45%</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section class="view active" id="dashboard-view">
+        <div class="view-header">
+          <div><h1>Dashboard</h1><p class="subtitle">System overview and quick actions</p></div>
+        </div>
+        <div class="notice-banner">
+          <span class="notice-icon">ℹ️</span>
+          <div class="notice-content">
+            <h4>Static Preview Mode</h4>
+            <p>Deploy the Node.js backend to enable full functionality with real terminal sessions.</p>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon cpu">🖥️</div><div class="stat-info"><span class="stat-value">23%</span><span class="stat-label">CPU Usage</span></div><div class="stat-bar"><div class="stat-bar-fill" style="width: 23%"></div></div></div>
+          <div class="stat-card"><div class="stat-icon ram">💾</div><div class="stat-info"><span class="stat-value">45%</span><span class="stat-label">Memory Usage</span></div><div class="stat-bar"><div class="stat-bar-fill" style="width: 45%"></div></div></div>
+          <div class="stat-card"><div class="stat-icon sessions">📁</div><div class="stat-info"><span class="stat-value">3</span><span class="stat-label">Active Sessions</span></div></div>
+          <div class="stat-card"><div class="stat-icon uptime">⏱️</div><div class="stat-info"><span class="stat-value">5d 12h</span><span class="stat-label">Uptime</span></div></div>
+        </div>
+        <div class="quick-actions">
+          <h2>Quick Actions</h2>
+          <div class="action-buttons">
+            <button class="action-btn primary" onclick="showView('terminal')"><span class="action-icon">➕</span><span class="action-text">New Session</span></button>
+            <button class="action-btn" onclick="showView('terminal')"><span class="action-icon">💻</span><span class="action-text">Open Terminal</span></button>
+            <button class="action-btn" onclick="showView('files')"><span class="action-icon">📂</span><span class="action-text">File Manager</span></button>
+            <button class="action-btn" onclick="showView('cron')"><span class="action-icon">⏰</span><span class="action-text">Cron Jobs</span></button>
+          </div>
+        </div>
+        <div class="system-info">
+          <h2>System Information</h2>
+          <div class="info-grid">
+            <div class="info-item"><span class="info-label">Hostname</span><span class="info-value">vps-pro-server</span></div>
+            <div class="info-item"><span class="info-label">Platform</span><span class="info-value">linux</span></div>
+            <div class="info-item"><span class="info-label">Architecture</span><span class="info-value">x86_64</span></div>
+            <div class="info-item"><span class="info-label">Total Memory</span><span class="info-value">3.8 GB</span></div>
+            <div class="info-item"><span class="info-label">Used Memory</span><span class="info-value">1.7 GB</span></div>
+            <div class="info-item"><span class="info-label">Free Memory</span><span class="info-value">2.1 GB</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="terminal-view">
+        <div class="view-header">
+          <h1>Terminal</h1>
+          <div class="terminal-controls">
+            <select class="session-select"><option>main-session (Active)</option><option>dev-server</option><option>backup-task</option></select>
+            <button class="ctrl-btn" title="New Session">➕</button>
+            <button class="ctrl-btn" title="Delete Session">🗑️</button>
+            <button class="ctrl-btn" title="Fullscreen">⛶</button>
+            <button class="ctrl-btn" title="Clear">🧹</button>
+          </div>
+        </div>
+        <div class="terminal-wrapper">
+          <div class="terminal-preview">
+            <div class="terminal-line prompt">root@vps-pro-server:~#</div>
+            <div class="terminal-line output">Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0 x86_64)</div>
+            <div class="terminal-line output"></div>
+            <div class="terminal-line prompt">root@vps-pro-server:~#</div>
+            <div class="terminal-line command">ls -la</div>
+            <div class="terminal-line output">total 64</div>
+            <div class="terminal-line output">drwxr-xr-x  2 root root 4096 Apr 19 00:00 .</div>
+            <div class="terminal-line output">drwxr-xr-x  3 root root 4096 Apr 19 00:00 ..</div>
+            <div class="terminal-line output">-rw-r--r--  1 root root 3106 Apr 19 00:00 .bashrc</div>
+            <div class="terminal-line output">drwxr-xr-x  3 root root 4096 Apr 19 00:00 .config</div>
+            <div class="terminal-line output">drwxr-xr-x  3 root root 4096 Apr 19 00:00 app</div>
+            <div class="terminal-line output">-rwxr-xr-x  1 root root 8192 Apr 19 00:00 .profile</div>
+            <div class="terminal-line prompt">root@vps-pro-server:~#</div>
+            <div class="terminal-line command">htop</div>
+            <div class="terminal-line output" style="color: var(--accent-yellow)">[Interactive htop display would appear here]</div>
+            <div class="terminal-line prompt">root@vps-pro-server:~#</div>
+          </div>
+          <div class="terminal-status"><span class="status-dot"></span><span class="status-text">Connected</span></div>
+        </div>
+      </section>
+
+      <section class="view" id="sessions-view">
+        <div class="view-header"><h1>Sessions</h1><button class="btn primary"><span>➕</span> New Session</button></div>
+        <div class="sessions-list">
+          <div class="session-card active">
+            <div class="session-icon">💻</div>
+            <div class="session-info"><h3>main-session</h3><p class="session-path">/root</p><p class="session-meta">Created: Apr 19, 2024 00:00 | PID: 12345</p></div>
+            <div class="session-actions"><button class="btn small primary">Reconnect</button><button class="btn small">Delete</button></div>
+          </div>
+          <div class="session-card">
+            <div class="session-icon">💻</div>
+            <div class="session-info"><h3>dev-server</h3><p class="session-path">/home/app</p><p class="session-meta">Created: Apr 18, 2024 15:30 | PID: 12890</p></div>
+            <div class="session-actions"><button class="btn small">Connect</button><button class="btn small">Delete</button></div>
+          </div>
+          <div class="session-card">
+            <div class="session-icon">💻</div>
+            <div class="session-info"><h3>backup-task</h3><p class="session-path">/backup</p><p class="session-meta">Created: Apr 17, 2024 22:00 | PID: 13456</p></div>
+            <div class="session-actions"><button class="btn small">Connect</button><button class="btn small">Delete</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="files-view">
+        <div class="view-header">
+          <h1>File Manager</h1>
+          <div class="file-controls">
+            <div class="breadcrumb"><span style="color: var(--accent-blue);">/</span><span style="color: var(--text-muted);">/</span><span style="color: var(--accent-blue);">home</span><span style="color: var(--text-muted);">/</span><span>app</span></div>
+            <button class="btn"><span>📁</span> New Folder</button>
+            <button class="btn"><span>📤</span> Upload</button>
+            <button class="btn"><span>🔄</span> Refresh</button>
+          </div>
+        </div>
+        <div class="file-manager-container">
+          <div class="file-list">
+            <div class="file-list-header"><span></span><span>Name</span><span>Size</span><span>Modified</span><span>Perms</span></div>
+            <div class="file-item" style="background: var(--bg-hover);"><span class="file-icon">📁</span><span class="file-name">..</span><span class="file-size">-</span><span class="file-date">-</span><span class="file-perms">755</span></div>
+            <div class="file-item"><span class="file-icon">📁</span><span class="file-name">config</span><span class="file-size">-</span><span class="file-date">Apr 19</span><span class="file-perms">755</span></div>
+            <div class="file-item"><span class="file-icon">📁</span><span class="file-name">logs</span><span class="file-size">-</span><span class="file-date">Apr 19</span><span class="file-perms">755</span></div>
+            <div class="file-item"><span class="file-icon">📜</span><span class="file-name">package.json</span><span class="file-size">2.1 KB</span><span class="file-date">Apr 19</span><span class="file-perms">644</span></div>
+            <div class="file-item"><span class="file-icon">📜</span><span class="file-name">server.js</span><span class="file-size">21 KB</span><span class="file-date">Apr 19</span><span class="file-perms">755</span></div>
+            <div class="file-item"><span class="file-icon">📝</span><span class="file-name">README.md</span><span class="file-size">4.3 KB</span><span class="file-date">Apr 18</span><span class="file-perms">644</span></div>
+            <div class="file-item"><span class="file-icon">📋</span><span class="file-name">.env</span><span class="file-size">128 B</span><span class="file-date">Apr 17</span><span class="file-perms">600</span></div>
+          </div>
+          <div class="file-preview">
+            <div class="preview-header"><h3>File Preview</h3></div>
+            <div class="preview-content">
+              <div class="code-preview">{
+  "name": "vps-pro",
+  "version": "1.0.0",
+  "description": "Advanced Web-based VPS Panel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "node-pty": "^1.0.0"
+  }
+}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="cron-view">
+        <div class="view-header"><h1>Cron Jobs</h1><button class="btn primary"><span>➕</span> Add Cron Job</button></div>
+        <div class="cron-list">
+          <div class="cron-card"><div class="cron-info"><h3>Daily Backup</h3><p class="cron-schedule">0 2 * * *</p><p class="cron-command">/scripts/backup.sh</p></div><div class="cron-actions"><button class="btn small primary">Pause</button><button class="btn small">Delete</button></div></div>
+          <div class="cron-card"><div class="cron-info"><h3>Health Check</h3><p class="cron-schedule">*/5 * * * *</p><p class="cron-command">curl -f http://localhost:3000/health</p></div><div class="cron-actions"><button class="btn small primary">Pause</button><button class="btn small">Delete</button></div></div>
+          <div class="cron-card"><div class="cron-info"><h3>Log Cleanup</h3><p class="cron-schedule">0 0 * * 0</p><p class="cron-command">find /var/log -name "*.log" -mtime +7 -delete</p></div><div class="cron-actions"><button class="btn small">Resume</button><button class="btn small">Delete</button></div></div>
+        </div>
+      </section>
+
+      <section class="view" id="vnc-view">
+        <div class="view-header"><h1>VNC Desktop</h1></div>
+        <div class="vnc-container">
+          <div class="vnc-placeholder">
+            <div class="vnc-icon">🖥️</div>
+            <h3>VNC Desktop Access</h3>
+            <p>Click "Start VNC" to launch a remote desktop session</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px;">Note: VNC requires additional server configuration</p>
+            <button class="btn primary" style="margin-top: 20px;"><span>▶️</span> Start VNC</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function showView(viewName) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.getAttribute('onclick').includes(viewName)));
+      document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === viewName + '-view'));
+    }
+  </script>
+
+<script>
+/**
+ * Iframe 元素高亮注入脚本
+ * 需要在目标网站中引入此脚本来支持跨域 iframe 高亮功能
+ *
+ * 使用方法：
+ * 1. 将此脚本添加到目标网站的 HTML 中
+ * 2. 或通过浏览器扩展、用户脚本等方式注入
+ */
+
+(function () {
+  "use strict";
+
+  // 检查是否在 iframe 中
+  if (window.self === window.top) {
+    return; // 不在 iframe 中，不执行
+  }
+
+  // 检查是否已经初始化过
+  if (window.__iframeHighlightInitialized) {
+    return;
+  }
+  window.__iframeHighlightInitialized = true;
+  console.log("Iframe 高亮脚本已加载");
+
+  // 创建高亮覆盖层
+  var overlay = document.createElement("div");
+  overlay.id = "iframe-highlight-overlay";
+  overlay.style.cssText = "\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    pointer-events: none;\n    z-index: 999999;\n    overflow: hidden;\n  ";
+
+  // 创建悬停高亮框（虚线边框）
+  var highlightBox = document.createElement("div");
+  highlightBox.id = "iframe-highlight-box";
+  highlightBox.style.cssText = "\n    position: absolute;\n    border: 2px dashed #007AFF;\n    background: rgba(0, 122, 255, 0.08);\n    pointer-events: none;\n    display: none;\n    transition: all 0.1s ease;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);\n    border-radius: 2px;\n  ";
+
+  // 创建选中节点的常驻高亮框（实线边框）
+  var selectedBox = document.createElement("div");
+  selectedBox.id = "iframe-selected-box";
+  selectedBox.style.cssText = "\n    position: absolute;\n    border: 2px solid #007AFF;\n    pointer-events: none;\n    display: none;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 107, 53, 0.4);\n    border-radius: 2px;\n    z-index: 1000000;\n  ";
+
+  // 创建悬停标签显示
+  var tagLabel = document.createElement("div");
+  tagLabel.id = "iframe-tag-label";
+  tagLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 2px 6px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 2px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000001;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    font-weight: 500;\n  ";
+
+  // 创建选中节点标签
+  var selectedLabel = document.createElement("div");
+  selectedLabel.id = "iframe-selected-label";
+  selectedLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 3px 8px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 3px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000002;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);\n    font-weight: 600;\n  ";
+  overlay.appendChild(highlightBox);
+  overlay.appendChild(selectedBox);
+  overlay.appendChild(tagLabel);
+  overlay.appendChild(selectedLabel);
+  document.body.appendChild(overlay);
+
+  // 存储当前选中的元素
+  var selectedElement = null;
+  var highlightEnabled = false;
+
+  // 更新选中元素的高亮显示
+  function updateSelectedHighlight(element) {
+    console.log("updateSelectedHighlight called with:", element);
+    if (!element) {
+      selectedBox.style.display = "none";
+      selectedLabel.style.display = "none";
+      selectedElement = null;
+      console.log("Cleared selected highlight");
+      return;
+    }
+    selectedElement = element;
+    var rect = element.getBoundingClientRect();
+    console.log("Selected element rect:", rect);
+
+    // 更新选中高亮框位置
+    selectedBox.style.display = "block";
+    selectedBox.style.left = "".concat(rect.left - 2, "px");
+    selectedBox.style.top = "".concat(rect.top - 2, "px");
+    selectedBox.style.width = "".concat(rect.width + 4, "px");
+    selectedBox.style.height = "".concat(rect.height + 4, "px");
+
+    // 更新选中标签位置和内容
+    selectedLabel.style.display = "block";
+    selectedLabel.textContent = "\u2713 <".concat(element.tagName.toLowerCase(), ">");
+
+    // 计算标签位置，确保不超出视窗
+    var labelTop = rect.top - 28;
+    var labelLeft = rect.left;
+
+    // 如果标签会超出顶部，显示在元素下方
+    if (labelTop < 5) {
+      labelTop = rect.bottom + 5;
+    }
+
+    // 如果标签会超出右侧，向左调整
+    var labelWidth = selectedLabel.offsetWidth || 100; // 预估宽度
+    if (labelLeft + labelWidth > window.innerWidth - 10) {
+      labelLeft = window.innerWidth - labelWidth - 10;
+    }
+    selectedLabel.style.left = "".concat(Math.max(5, labelLeft), "px");
+    selectedLabel.style.top = "".concat(labelTop, "px");
+    console.log("Selected highlight positioned at:", {
+      left: selectedBox.style.left,
+      top: selectedBox.style.top,
+      width: selectedBox.style.width,
+      height: selectedBox.style.height
+    });
+  }
+  function getElementSelector(element) {
+    if (!(element instanceof Element)) throw new Error('Argument must be a DOM element');
+    var segments = [];
+    var current = element;
+    while (current !== document.documentElement) {
+      var selector = '';
+      // 优先检查唯一ID
+      if (current.id && document.querySelectorAll("#".concat(current.id)).length === 1) {
+        segments.unshift("#".concat(current.id));
+        break; // ID唯一，无需继续向上
+      }
+
+      // 生成类名选择器（取第一个有效类名）
+      var classes = Array.from(current.classList).filter(function (c) {
+        return !c.startsWith('js-');
+      });
+      var className = classes.length > 0 ? ".".concat(classes[0]) : '';
+
+      // 生成位置索引（nth-child）
+      var tag = current.tagName.toLowerCase();
+      if (!className) {
+        var siblings = Array.from(current.parentNode.children);
+        var index = siblings.findIndex(function (el) {
+          return el === current;
+        }) + 1;
+        selector = "".concat(tag, ":nth-child(").concat(index, ")");
+      } else {
+        selector = className;
+      }
+      segments.unshift(selector);
+      current = current.parentElement;
+    }
+
+    // 处理根元素
+    if (current === document.documentElement) {
+      segments.unshift('html');
+    }
+    return segments.join(' > ');
+  }
+
+  // 获取元素文本内容
+  function getElementText(element) {
+    var _element$textContent;
+    if (element.tagName === "INPUT") {
+      return element.value || element.placeholder || "";
+    }
+    if (element.tagName === "TEXTAREA") {
+      return element.value || element.placeholder || "";
+    }
+    var text = ((_element$textContent = element.textContent) === null || _element$textContent === void 0 ? void 0 : _element$textContent.trim()) || "";
+    return text.length > 50 ? text.substring(0, 50) + "..." : text;
+  }
+
+  // 获取元素属性信息
+  function getElementAttributes(element) {
+    var attrs = {};
+    for (var i = 0; i < element.attributes.length; i++) {
+      var attr = element.attributes[i];
+      attrs[attr.name] = attr.value;
+    }
+    return attrs;
+  }
+
+  // 鼠标悬停事件处理
+  function handleMouseOver(e) {
+    if (!highlightEnabled) return;
+    var target = e.target;
+    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
+      return;
+    }
+
+    // 避免高亮 html 和 body 元素
+    if (target === document.documentElement || target === document.body) {
+      return;
+    }
+
+    // 如果是已选中的元素，不显示悬停高亮
+    if (target === selectedElement) {
+      highlightBox.style.display = "none";
+      tagLabel.style.display = "none";
+      return;
+    }
+    var rect = target.getBoundingClientRect();
+    var selector = getElementSelector(target);
+    var text = getElementText(target);
+    var attributes = getElementAttributes(target);
+
+    // 更新悬停高亮框位置
+    highlightBox.style.display = "block";
+    highlightBox.style.left = "".concat(rect.left - 2, "px");
+    highlightBox.style.top = "".concat(rect.top - 2, "px");
+    highlightBox.style.width = "".concat(rect.width + 4, "px");
+    highlightBox.style.height = "".concat(rect.height + 4, "px");
+
+    // 更新标签位置和内容
+    tagLabel.style.display = "block";
+    tagLabel.textContent = "<".concat(target.tagName.toLowerCase(), ">");
+
+    // 计算标签位置，确保不超出视窗
+    var labelTop = rect.top - 22;
+    var labelLeft = rect.left;
+
+    // 如果标签会超出顶部，显示在元素下方
+    if (labelTop < 0) {
+      labelTop = rect.bottom + 5;
+    }
+
+    // 如果标签会超出右侧，向左调整
+    if (labelLeft + tagLabel.offsetWidth > window.innerWidth) {
+      labelLeft = window.innerWidth - tagLabel.offsetWidth - 5;
+    }
+    tagLabel.style.left = "".concat(Math.max(0, labelLeft), "px");
+    tagLabel.style.top = "".concat(labelTop, "px");
+
+    // 发送消息到父窗口
+    var elementInfo = {
+      tagName: target.tagName.toLowerCase(),
+      rect: {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+        x: rect.x,
+        y: rect.y
+      },
+      selector: selector,
+      text: text,
+      attributes: attributes,
+      url: window.location.href,
+      path: window.location.pathname,
+      timestamp: Date.now()
+    };
+    try {
+      window.parent.postMessage({
+        type: "iframe-element-hover",
+        data: elementInfo,
+        source: "iframe-highlight-injector"
+      }, "*");
+    } catch (error) {
+      console.warn("无法发送消息到父窗口:", error);
+    }
+  }
+
+  // 鼠标离开事件处理
+  function handleMouseOut(e) {
+    if (!highlightEnabled) return;
+    var relatedTarget = e.relatedTarget;
+
+    // 如果鼠标移动到高亮相关元素上，不隐藏高亮
+    if (relatedTarget && (relatedTarget === highlightBox || relatedTarget === tagLabel || relatedTarget === overlay || relatedTarget === selectedBox || relatedTarget === selectedLabel)) {
+      return;
+    }
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    try {
+      window.parent.postMessage({
+        type: "iframe-element-hover",
+        data: null,
+        source: "iframe-highlight-injector"
+      }, "*");
+    } catch (error) {
+      console.warn("无法发送消息到父窗口:", error);
+    }
+  }
+
+  // 点击事件处理
+  function handleClick(e) {
+    var target = e.target;
+    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
+      return;
+    }
+
+    // 避免处理 html 和 body 元素
+    if (target === document.documentElement || target === document.body) {
+      return;
+    }
+
+    // 检查是否是交互元素，这些元素需要保留默认行为
+    var isInteractiveElement = ['input', 'textarea', 'select', 'button', 'a'].includes(target.tagName.toLowerCase());
+
+    // 如果高亮功能启用，对于非交互元素阻止默认行为和事件传播
+    if (highlightEnabled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    var rect = target.getBoundingClientRect();
+    var selector = getElementSelector(target);
+    var text = getElementText(target);
+    var attributes = getElementAttributes(target);
+    console.log("Element clicked:", {
+      tagName: target.tagName,
+      selector: selector,
+      rect: rect
+    });
+
+    // 立即更新选中高亮
+    updateSelectedHighlight(target);
+
+    // 隐藏悬停高亮，因为现在是选中状态
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    var elementInfo = {
+      tagName: target.tagName.toLowerCase(),
+      rect: {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+        x: rect.x,
+        y: rect.y
+      },
+      selector: selector,
+      text: text,
+      attributes: attributes,
+      url: window.location.href,
+      path: window.location.pathname,
+      timestamp: Date.now()
+    };
+    try {
+      window.parent.postMessage({
+        type: "iframe-element-click",
+        data: elementInfo,
+        source: "iframe-highlight-injector"
+      }, "*");
+    } catch (error) {
+      console.warn("无法发送消息到父窗口:", error);
+    }
+  }
+
+  // 监听来自父窗口的消息
+  function handleParentMessage(event) {
+    console.log("Received message from parent:", event.data);
+    if (event.data.type === "iframe-highlight-toggle") {
+      var enabled = event.data.enabled;
+      console.log("Highlight toggle:", enabled);
+      if (enabled) {
+        enableHighlight();
+      } else {
+        disableHighlight();
+      }
+    } else if (event.data.type === "enable-iframe-highlight") {
+      console.log("Enable iframe highlight");
+      enableHighlight();
+    } else if (event.data.type === "disable-iframe-highlight") {
+      console.log("Disable iframe highlight");
+      disableHighlight();
+    } else if (event.data.type === "toggle-iframe-highlight") {
+      var _enabled = event.data.enabled !== undefined ? event.data.enabled : !highlightEnabled;
+      console.log("Toggle iframe highlight to:", _enabled);
+      if (_enabled) {
+        enableHighlight();
+      } else {
+        disableHighlight();
+      }
+    } else if (event.data.type === "update-selected-element") {
+      var selector = event.data.selector;
+      console.log("Update selected element with selector:", selector);
+      if (selector) {
+        try {
+          var element = document.querySelector(selector);
+          console.log("Found element by selector:", element);
+          updateSelectedHighlight(element);
+        } catch (error) {
+          console.warn("Failed to select element:", error);
+          updateSelectedHighlight(null);
+        }
+      } else {
+        updateSelectedHighlight(null);
+      }
+    } else if (event.data.type === "clear-selected-element") {
+      console.log("Clear selected element");
+      updateSelectedHighlight(null);
+    }
+  }
+
+  // 启用高亮功能
+  function enableHighlight() {
+    console.log("Enabling highlight");
+    document.addEventListener("mouseover", handleMouseOver, true);
+    document.addEventListener("mouseout", handleMouseOut, true);
+    document.addEventListener("click", handleClick, true);
+    highlightEnabled = true;
+    overlay.style.display = "block";
+  }
+
+  // 禁用高亮功能
+  function disableHighlight() {
+    console.log("Disabling highlight");
+    highlightEnabled = false;
+    // 保持事件监听器，但通过 highlightEnabled 变量控制行为
+    // 这样可以保留选中状态的显示
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    // 不隐藏 selectedBox 和 selectedLabel，保留选中状态
+  }
+
+  // 完全禁用高亮功能（移除所有监听器）
+  function fullyDisableHighlight() {
+    console.log("Fully disabling highlight");
+    highlightEnabled = false;
+    document.removeEventListener("mouseover", handleMouseOver, true);
+    document.removeEventListener("mouseout", handleMouseOut, true);
+    document.removeEventListener("click", handleClick, true);
+    overlay.style.display = "none";
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    selectedBox.style.display = "none";
+    selectedLabel.style.display = "none";
+  }
+
+  // 添加事件监听
+  enableHighlight();
+  window.addEventListener("message", handleParentMessage);
+
+  // 暴露全局函数供外部调用
+  window.__iframeHighlightControl = {
+    enable: enableHighlight,
+    disable: disableHighlight,
+    fullyDisable: fullyDisableHighlight,
+    isEnabled: function isEnabled() {
+      return highlightEnabled;
+    },
+    getSelectedElement: function getSelectedElement() {
+      return selectedElement;
+    },
+    updateSelected: updateSelectedHighlight,
+    // 通过消息发送开关控制
+    sendToggleMessage: function sendToggleMessage(enabled) {
+      window.parent.postMessage({
+        type: 'iframe-highlight-status',
+        enabled: enabled || highlightEnabled,
+        source: 'iframe-highlight-injector'
+      }, '*');
+    }
+  };
+
+  // 通知父窗口脚本已加载
+  try {
+    window.parent.postMessage({
+      type: "iframe-highlight-ready",
+      data: {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: Date.now()
+      },
+      source: "iframe-highlight-injector"
+    }, "*");
+  } catch (error) {
+    console.warn("无法发送就绪消息到父窗口:", error);
+  }
+
+  // 清理函数
+  window.__iframeHighlightCleanup = function () {
+    fullyDisableHighlight();
+    window.removeEventListener("message", handleParentMessage);
+    if (overlay.parentElement) {
+      overlay.parentElement.removeChild(overlay);
+    }
+    delete window.__iframeHighlightInitialized;
+    delete window.__iframeHighlightCleanup;
+  };
+})();
+
+</script>
+</body>
+</html>
